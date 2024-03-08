@@ -6,8 +6,8 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "spotify-to-tidal-desktop",
-    "version": "0.0.0"
+    "productName": "Spotify to TIDAL",
+    "version": "1.0.0"
   },
   "tauri": {
     "allowlist": {
@@ -41,17 +41,6 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ]
-    },
-    "updater": {
-      "active": true,
-      "endpoints": [
-        "https://releases.myapp.com/{{target}}/{{arch}}/{{current_version}}"
-      ],
-      "dialog": true,
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDU5MkZBOUREMjkyOUM3QzYKUldUR3h5a3AzYWt2V1pldzdGMTFBQWYxeExKYXUvOUtjeEVJL3pOV1diMThaTWZRUjR0VkpaM1UK",
-      "windows": {
-        "installMode": "passive"
-      }
     }
   }
 }
