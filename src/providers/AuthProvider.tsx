@@ -1,5 +1,4 @@
 "use client";
-import axios from "axios";
 import React, {
   createContext,
   useCallback,
@@ -7,14 +6,14 @@ import React, {
   useEffect,
   useState,
 } from "react";
+import { obtainCredentials } from "../api/obtainCredentials";
 
 const endpoint = import.meta.env.VITE_API_ENDPOINT;
 
 interface AuthContextType {
   tidalClientToken: string | null;
   spotifyClientToken: string | null;
-  fetchAndSetToken: () => Promise<void>;
-  fetchAndSetSpotifyToken: () => Promise<void>;
+  fetchAndSetAuthTokens: () => Promise<void>;
   endpoint: string;
 }
 
@@ -28,90 +27,79 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     null
   );
 
-  const fetchAndSetToken = useCallback(async () => {
+  const fetchAndSetAuthTokens = useCallback(async () => {
     try {
       // Attempt to fetch the token from local storage
-      const storedToken = localStorage.getItem("tidalToken");
-      const tokenDetails = storedToken ? JSON.parse(storedToken) : null;
+      const storedTidalToken = localStorage.getItem("tidalToken");
+      const storedSpotifyToken = localStorage.getItem("spotifyToken");
+      const tidalTokenDetails = storedTidalToken
+        ? JSON.parse(storedTidalToken)
+        : null;
+      const spotifyTokenDetails = storedSpotifyToken
+        ? JSON.parse(storedSpotifyToken)
+        : null;
 
       const now = new Date();
 
       if (
-        tokenDetails &&
-        tokenDetails.expires &&
-        new Date(tokenDetails.expires) > now
+        tidalTokenDetails &&
+        tidalTokenDetails.expires &&
+        new Date(tidalTokenDetails.expires) > now &&
+        spotifyTokenDetails &&
+        spotifyTokenDetails.spotifyExpires &&
+        new Date(spotifyTokenDetails.spotifyExpires) > now
       ) {
-        setTidalClientToken(tokenDetails.token);
+        setTidalClientToken(tidalTokenDetails.token);
+        setSpotifyClientToken(spotifyTokenDetails.token);
       } else {
         // Token is expired or not present; fetch a new one
-        const response = await axios.post(
-          `${endpoint}/api/obtain-tidal-credentials`
-        );
-        const { access_token, expires_in } = response.data;
+        const response = await obtainCredentials();
+        if ("error" in response.data) {
+          throw new Error("Failed to obtain credentials");
+        }
+        const { tidalResponse, spotifyResponse } = response.data;
 
-        const expires = new Date(
-          now.getTime() + expires_in * 1000
+        const tidalExpires = new Date(
+          now.getTime() + tidalResponse.expires_in * 1000
+        ).toISOString();
+
+        const spotifyExpires = new Date(
+          now.getTime() + spotifyResponse.expires_in * 1000
         ).toISOString();
 
         localStorage.setItem(
           "tidalToken",
-          JSON.stringify({ token: access_token, expires })
+          JSON.stringify({
+            token: tidalResponse.access_token,
+            expires: tidalExpires,
+          })
         );
-        setTidalClientToken(access_token);
+        setTidalClientToken(tidalResponse.access_token);
+
+        localStorage.setItem(
+          "spotifyToken",
+          JSON.stringify({
+            token: spotifyResponse.access_token,
+            spotifyExpires,
+          })
+        );
+        setSpotifyClientToken(spotifyResponse.access_token);
       }
     } catch (error) {
       console.error("Error obtaining the TIDAL client token:", error);
     }
   }, []);
 
-  const fetchAndSetSpotifyToken = useCallback(async () => {
-    try {
-      // Attempt to fetch the Spotify token from local storage
-      const storedToken = localStorage.getItem("spotifyToken");
-      const tokenDetails = storedToken ? JSON.parse(storedToken) : null;
-
-      const now = new Date();
-
-      if (
-        tokenDetails &&
-        tokenDetails.expires &&
-        new Date(tokenDetails.expires) > now
-      ) {
-        setSpotifyClientToken(tokenDetails.token);
-      } else {
-        // Token is expired or not present; fetch a new one
-        const response = await axios.post(
-          `${endpoint}/api/obtain-spotify-credentials`
-        );
-        const { access_token, expires_in } = response.data;
-
-        const expires = new Date(
-          now.getTime() + expires_in * 1000
-        ).toISOString();
-
-        localStorage.setItem(
-          "spotifyToken",
-          JSON.stringify({ token: access_token, expires })
-        );
-        setSpotifyClientToken(access_token);
-      }
-    } catch (error) {
-      console.error("Error obtaining the Spotify client token:", error);
-    }
-  }, []);
-
   useEffect(() => {
-    fetchAndSetToken();
-    fetchAndSetSpotifyToken();
-  }, [fetchAndSetToken, fetchAndSetSpotifyToken]);
+    fetchAndSetAuthTokens();
+  }, [fetchAndSetAuthTokens]);
 
   return (
     <AuthContext.Provider
       value={{
         tidalClientToken,
         spotifyClientToken,
-        fetchAndSetToken,
-        fetchAndSetSpotifyToken,
+        fetchAndSetAuthTokens,
         endpoint,
       }}
     >

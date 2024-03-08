@@ -30,7 +30,7 @@ export default function ThemeProvider({
           overflowY: "auto",
           overflowX: "hidden",
           flexWrap: "wrap",
-          py: 4,
+          py: 6,
         }}
       >
         {children}

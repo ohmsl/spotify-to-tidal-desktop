@@ -5,6 +5,7 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import ErrorPage from "./error-page";
 import AuthProvider from "./providers/AuthProvider";
 import ThemeProvider from "./providers/ThemeProvider";
+import PlaylistConvert from "./routes/PlaylistConvert";
 import PlaylistView from "./routes/PlaylistView";
 import Home from "./routes/root";
 
@@ -21,9 +22,18 @@ const router = createBrowserRouter([
     element: <ErrorPage />,
   },
   {
-    path: "/playlist/view/:id",
+    path: "/playlist/view/:playlistId",
     element: <PlaylistView />,
     errorElement: <ErrorPage />,
+  },
+  {
+    path: "/playlist/convert/:playlistId",
+    element: <PlaylistConvert />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "*",
+    element: <ErrorPage />,
   },
 ]);
 

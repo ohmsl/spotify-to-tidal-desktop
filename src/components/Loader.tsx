@@ -51,7 +51,7 @@ function CircularProgressWithLabel(
 type Props = {
   progress?: number;
   error?: string;
-  message?: string;
+  message?: string | React.ReactNode;
 };
 
 const Loader = ({ progress, error, message }: Props) => {

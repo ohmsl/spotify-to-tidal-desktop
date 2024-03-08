@@ -17,6 +17,7 @@ import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import NavButtons from "../components/NavButtons";
 import Stepper from "../components/Stepper";
 import { ClientSpotifyPlaylist } from "../types/ClientSpotifyPlaylist";
 import { ClientTidalPlaylist } from "../types/ClientTidalPlaylist";
@@ -51,6 +52,7 @@ export default function Home() {
 
   return (
     <>
+      <NavButtons />
       <Container
         sx={{
           display: "flex",

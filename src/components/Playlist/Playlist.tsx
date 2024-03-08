@@ -16,8 +16,9 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
+import { sendNotification } from "@tauri-apps/api/notification";
 import dayjs from "dayjs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ClientSpotifyPlaylist } from "../../types/ClientSpotifyPlaylist";
 import { ClientTidalPlaylist } from "../../types/ClientTidalPlaylist";
@@ -33,6 +34,16 @@ const Playlist = ({ playlist, step }: Props) => {
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [openMethod, setOpenMethod] = useState<"desktop" | "web">("desktop");
+
+  useEffect(() => {
+    if (playlist.type === "tidal") {
+      sendNotification({
+        title: "Spotify to TIDAL",
+        body: "Your playlist has been processed!",
+      });
+    }
+  }, [playlist.type]);
+
   return (
     <>
       <Stepper step={step} />
@@ -177,7 +188,7 @@ const Playlist = ({ playlist, step }: Props) => {
           vertical: "top",
           horizontal: "right",
         }}
-        slotProps={{ paper: { variant: "outlined" } }}
+        slotProps={{ paper: { variant: "outlined", elevation: 0 } }}
         sx={{ mt: 0.5 }}
       >
         <List>

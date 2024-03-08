@@ -1,10 +1,11 @@
-import { Box, Button, Container, Link } from "@mui/material";
-import axios, { AxiosError } from "axios";
+import { Alert, Box, Button, Container, Link } from "@mui/material";
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
+import { convertSpotifyPlaylist } from "../api/convertPlaylist";
 import Loader from "../components/Loader";
+import NavButtons from "../components/NavButtons";
 import Playlist from "../components/Playlist/Playlist";
 import { useAuth } from "../providers/AuthProvider";
 import { ClientTidalPlaylist } from "../types/ClientTidalPlaylist";
@@ -19,9 +20,19 @@ const PlaylistConvert = () => {
 
   const [playlist, setPlaylist] = useState<ClientTidalPlaylist>();
   const playlistRef = useRef<ClientTidalPlaylist>();
+  const hasFetchedRef = useRef(false);
 
   useEffect(() => {
-    if (!tidalClientToken || !spotifyClientToken) return;
+    if (hasFetchedRef.current) {
+      console.log(
+        "Fetch operation skipped because it has already been executed."
+      );
+      return;
+    }
+
+    if (!tidalClientToken || !spotifyClientToken)
+      throw new Error("Not authenticated");
+    if (!params.playlistId) throw new Error("Missing playlist ID");
     if (playlistRef.current) {
       setPlaylist(playlistRef.current);
       return;
@@ -43,53 +54,26 @@ const PlaylistConvert = () => {
       }
     }
 
-    axios
-      .post(
-        `/api/convert-spotify-playlist/${params.playlistId}`,
-        {},
-        {
-          headers: {
-            "x-tidal-client-token": tidalClientToken,
-            "x-spotify-client-token": spotifyClientToken,
-          },
-        }
-      )
+    convertSpotifyPlaylist(
+      tidalClientToken,
+      spotifyClientToken,
+      params.playlistId,
+      setProgress
+    )
       .then((response) => {
+        if ("error" in response.data) {
+          setError(response.data.error);
+          return;
+        }
         setPlaylist(response.data);
         playlistRef.current = response.data;
         console.log("fetched playlist from server");
-        clearInterval(interval);
       })
-      .catch((error: AxiosError) => {
-        if (error.code === "ERR_NETWORK") {
-          setError(
-            "Could not connect to server, check your internet connection and try again later."
-          );
-          return;
-        }
-        if (error.response?.status === 429) {
-          setError("Rate limited, please try again later.");
-        } else {
-          setError(
-            error.request?.statusText ||
-              "An unknown error occurred, please try again later."
-          );
-        }
-        console.error(error);
-        clearInterval(interval);
+      .catch((error) => {
+        setError(error.message);
       });
-    const interval: NodeJS.Timeout = setInterval(() => {
-      axios
-        .get(`/api/convert-spotify-playlist/${params.playlistId}`, {})
-        .then((response) => {
-          setProgress(response.data.progress);
-        })
-        .catch((error: AxiosError) => {
-          console.error("Error polling progress: ", error);
-        });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [tidalClientToken, spotifyClientToken, params.playlistId]);
+    hasFetchedRef.current = true;
+  }, []);
 
   const handleSave = () => {
     const savedPlaylists = JSON.parse(
@@ -102,30 +86,46 @@ const PlaylistConvert = () => {
   };
 
   return (
-    <Container sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      {playlist && <Playlist playlist={playlist} step={3} />}
-      {playlist && (
-        <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
-          <Button
-            variant="text"
-            LinkComponent={Link}
-            href={`/playlist/view/${params.playlistId}`}
+    <>
+      <NavButtons />
+      <Container sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        {playlist && <Playlist playlist={playlist} step={3} />}
+        {playlist && (
+          <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
+            <Button
+              variant="text"
+              LinkComponent={Link}
+              href={`/playlist/view/${params.playlistId}`}
+            >
+              Back
+            </Button>
+            <Button variant="contained" onClick={handleSave}>
+              Save
+            </Button>
+          </Box>
+        )}
+        {!playlist && (
+          <Loader
+            message="This may take a moment..."
+            progress={progress}
+            error={error}
+          />
+        )}
+        {!playlist && (
+          <Alert
+            severity="info"
+            sx={{
+              position: "fixed",
+              top: 12,
+              left: "50%",
+              transform: "translateX(-50%)",
+            }}
           >
-            Back
-          </Button>
-          <Button variant="contained" onClick={handleSave}>
-            Save
-          </Button>
-        </Box>
-      )}
-      {!playlist && (
-        <Loader
-          message="This may take a moment..."
-          progress={progress}
-          error={error}
-        />
-      )}
-    </Container>
+            You can background this process, we'll let you know when it's done.
+          </Alert>
+        )}
+      </Container>
+    </>
   );
 };
 
