@@ -1,5 +1,5 @@
 import axios, { AxiosError } from "axios";
-import { ClientTidalPlaylist } from "../../src/types/ClientTidalPlaylist";
+import { TidalPlaylist } from "../types/TidalPlaylist";
 import { StandardApiResponse } from "./obtainCredentials";
 
 export const convertSpotifyPlaylist = async (
@@ -7,7 +7,7 @@ export const convertSpotifyPlaylist = async (
   spotifyToken: string,
   playlistId: string,
   setProgress?: (progress: number) => void
-): Promise<StandardApiResponse<ClientTidalPlaylist>> => {
+): Promise<StandardApiResponse<TidalPlaylist>> => {
   if (!tidalToken) {
     return { data: { error: "Must provide TIDAL client token." } };
   }
@@ -46,6 +46,9 @@ export const convertSpotifyPlaylist = async (
     };
     let lastRequestCost = 0;
     for (let i = 0; i < tracks.length; i++) {
+      if (setProgress) {
+        setProgress((i / tracks.length) * 100);
+      }
       const track = tracks[i];
       await new Promise((resolve) => {
         if (i === 0) {
@@ -97,12 +100,9 @@ export const convertSpotifyPlaylist = async (
         console.log("No match found for", track.title);
         tracks[i] = null;
       }
-      if (setProgress) {
-        setProgress((i / tracks.length) * 100);
-      }
     }
 
-    const tidalPlaylist: ClientTidalPlaylist = {
+    const tidalPlaylist: TidalPlaylist = {
       type: "tidal",
       id: playlistId,
       name: spotifyResponse.data.name,
@@ -143,6 +143,7 @@ export const convertSpotifyPlaylist = async (
     };
 
     console.log("Rate limit:", rateLimit);
+    setProgress && setProgress(100);
     return { data: tidalPlaylist };
   } catch (error: any) {
     console.error("Error converting Spotify playlist:", error);

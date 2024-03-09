@@ -1,14 +1,15 @@
 import { Alert, Box, Button, Container, Link } from "@mui/material";
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { convertSpotifyPlaylist } from "../api/convertPlaylist";
 import Loader from "../components/Loader";
 import NavButtons from "../components/NavButtons";
 import Playlist from "../components/Playlist/Playlist";
 import { useAuth } from "../providers/AuthProvider";
-import { ClientTidalPlaylist } from "../types/ClientTidalPlaylist";
+import { ConversionContext } from "../providers/ConversionProvider";
+import { TidalPlaylist } from "../types/TidalPlaylist";
 dayjs.extend(duration);
 
 const PlaylistConvert = () => {
@@ -18,9 +19,11 @@ const PlaylistConvert = () => {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
 
-  const [playlist, setPlaylist] = useState<ClientTidalPlaylist>();
-  const playlistRef = useRef<ClientTidalPlaylist>();
+  const [playlist, setPlaylist] = useState<TidalPlaylist>();
+  const playlistRef = useRef<TidalPlaylist>();
   const hasFetchedRef = useRef(false);
+
+  const { setTidalPlaylist } = useContext(ConversionContext);
 
   useEffect(() => {
     if (hasFetchedRef.current) {
@@ -43,11 +46,12 @@ const PlaylistConvert = () => {
       );
       if (savedPlaylists.length > 0) {
         const playlist = savedPlaylists.find(
-          (playlist: ClientTidalPlaylist) => playlist.id === params.playlistId
+          (playlist: TidalPlaylist) => playlist.id === params.playlistId
         );
         if (playlist) {
           setPlaylist(playlist);
           playlistRef.current = playlist;
+          setTidalPlaylist(playlist);
           console.log("found playlist in saved playlists");
           return;
         }
@@ -67,6 +71,7 @@ const PlaylistConvert = () => {
         }
         setPlaylist(response.data);
         playlistRef.current = response.data;
+        setTidalPlaylist(response.data);
         console.log("fetched playlist from server");
       })
       .catch((error) => {
@@ -88,6 +93,12 @@ const PlaylistConvert = () => {
   return (
     <>
       <NavButtons />
+      <Loader
+        open={!playlist}
+        message="This may take a moment..."
+        progress={progress}
+        error={error}
+      />
       <Container sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {playlist && <Playlist playlist={playlist} step={3} />}
         {playlist && (
@@ -104,13 +115,7 @@ const PlaylistConvert = () => {
             </Button>
           </Box>
         )}
-        {!playlist && (
-          <Loader
-            message="This may take a moment..."
-            progress={progress}
-            error={error}
-          />
-        )}
+
         {!playlist && (
           <Alert
             severity="info"

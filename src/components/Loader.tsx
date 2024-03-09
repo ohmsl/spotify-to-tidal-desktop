@@ -1,4 +1,5 @@
 import {
+  Backdrop,
   Box,
   Button,
   CircularProgress,
@@ -7,6 +8,7 @@ import {
   Typography,
   circularProgressClasses,
 } from "@mui/material";
+import { useEffect, useState } from "react";
 
 function CircularProgressWithLabel(
   props: CircularProgressProps & { value: number | undefined }
@@ -14,7 +16,11 @@ function CircularProgressWithLabel(
   return (
     <Box sx={{ position: "relative", display: "inline-flex" }}>
       <CircularProgress
-        variant={props.value ? "determinate" : "indeterminate"}
+        variant={
+          props.value !== undefined && props.value >= 0
+            ? "determinate"
+            : "indeterminate"
+        }
         size={64}
         sx={{
           [`& .${circularProgressClasses.circle}`]: {
@@ -22,7 +28,9 @@ function CircularProgressWithLabel(
           },
         }}
         {...props}
-        disableShrink={props.value ? false : true}
+        disableShrink={
+          props.value !== undefined && props.value >= 0 ? false : true
+        }
       />
       <Box
         sx={{
@@ -36,12 +44,12 @@ function CircularProgressWithLabel(
           justifyContent: "center",
         }}
       >
-        {props.value && props.value !== 0 ? (
+        {props.value !== undefined && props.value >= 0 ? (
           <Typography
             variant="h6"
             component="div"
             color="text.secondary"
-          >{`${Math.round(props.value)}%`}</Typography>
+          >{`${Math.round(props.value || 0)}%`}</Typography>
         ) : null}
       </Box>
     </Box>
@@ -49,39 +57,65 @@ function CircularProgressWithLabel(
 }
 
 type Props = {
+  open: boolean;
   progress?: number;
   error?: string;
   message?: string | React.ReactNode;
 };
 
-const Loader = ({ progress, error, message }: Props) => {
+const Loader = ({ open, progress, error, message }: Props) => {
+  const [internalOpen, setInternalOpen] = useState(open);
+
+  useEffect(() => {
+    if (open) {
+      setInternalOpen(true);
+    } else {
+      setTimeout(() => {
+        setInternalOpen(false);
+      }, 500);
+    }
+  }, [open]);
+
   return (
-    <Box
+    <Backdrop
+      open={internalOpen}
       sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 1,
+        background: (theme) => theme.palette.primary.gradient,
+        zIndex: 9999,
       }}
     >
-      {!error ? (
-        <>
-          <Box>
-            <CircularProgressWithLabel value={progress} />
-          </Box>
-          <Typography variant="h6">{message}</Typography>
-        </>
-      ) : (
-        <>
-          <Typography variant="h6" color="error">
-            {error}
-          </Typography>
-          <Button variant="text" color="primary" LinkComponent={Link} href="/">
-            Go back
-          </Button>
-        </>
-      )}
-    </Box>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 1,
+        }}
+      >
+        {!error ? (
+          <>
+            <Box>
+              <CircularProgressWithLabel value={progress} />
+            </Box>
+            <Typography variant="h6">{message}</Typography>
+          </>
+        ) : (
+          <>
+            <Typography variant="h6" color="error">
+              {error}
+            </Typography>
+            <Button
+              variant="text"
+              color="primary"
+              LinkComponent={Link}
+              href="/"
+            >
+              Go back
+            </Button>
+          </>
+        )}
+      </Box>
+    </Backdrop>
   );
 };
 

@@ -1,40 +1,20 @@
-import { ExpandMore } from "@mui/icons-material";
-import CheckIcon from "@mui/icons-material/Check";
-import {
-  Box,
-  Button,
-  List,
-  ListItemText,
-  MenuItem,
-  Paper,
-  Popover,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Typography,
-  useTheme,
-} from "@mui/material";
+import { Box, Paper, Typography } from "@mui/material";
 import { sendNotification } from "@tauri-apps/api/notification";
 import dayjs from "dayjs";
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { ClientSpotifyPlaylist } from "../../types/ClientSpotifyPlaylist";
-import { ClientTidalPlaylist } from "../../types/ClientTidalPlaylist";
+import { useEffect } from "react";
+import { SpotifyPlaylist } from "../../types/SpotifyPlaylist";
+import { TidalPlaylist } from "../../types/TidalPlaylist";
 import Stepper from "../Stepper";
 import PlaylistCover from "./PlaylistCover";
+import PlaylistSpotify from "./PlaylistSpotify";
+import PlaylistTidal from "./PlaylistTidal";
 
 type Props = {
-  playlist: ClientSpotifyPlaylist | ClientTidalPlaylist;
+  playlist: SpotifyPlaylist | TidalPlaylist;
   step: number;
 };
 
 const Playlist = ({ playlist, step }: Props) => {
-  const theme = useTheme();
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [openMethod, setOpenMethod] = useState<"desktop" | "web">("desktop");
-
   useEffect(() => {
     if (playlist.type === "tidal") {
       sendNotification({
@@ -81,139 +61,12 @@ const Playlist = ({ playlist, step }: Props) => {
             </Box>
           </Box>
         </Box>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            width: "100%",
-          }}
-        >
-          <Typography variant="h6">Tracks</Typography>
-          {playlist.type === "tidal" && (
-            <Button
-              variant="contained"
-              onClick={(event) => setAnchorEl(event.currentTarget)}
-              endIcon={<ExpandMore />}
-            >
-              Open In
-            </Button>
-          )}
-        </Box>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>#</TableCell>
-              <TableCell>Title</TableCell>
-              <TableCell>Album</TableCell>
-              <TableCell align="right">Duration</TableCell>
-              {playlist.type === "tidal" && (
-                <TableCell align="right">URL</TableCell>
-              )}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {(playlist.type === "spotify"
-              ? playlist.tracks.slice(0, 5)
-              : playlist.tracks
-            ).map((track, index) => (
-              <TableRow key={index}>
-                <TableCell>{index + 1}</TableCell>
-                <TableCell>
-                  <ListItemText
-                    primary={track.title}
-                    secondary={track.artist}
-                  />
-                </TableCell>
-                <TableCell>{track.album}</TableCell>
-                <TableCell align="right">
-                  {dayjs
-                    .duration(
-                      track.duration,
-                      playlist.type === "tidal" ? "s" : "ms"
-                    )
-                    .format("m:ss")}
-                </TableCell>
-                {playlist.type === "tidal" && (
-                  <TableCell align="right">
-                    <Link
-                      to={
-                        openMethod === "web"
-                          ? (track as ClientTidalPlaylist["tracks"][0]).url
-                          : `tidal://track/${
-                              (track as ClientTidalPlaylist["tracks"][0]).id
-                            }`
-                      }
-                      target={openMethod === "web" ? "_blank" : "_self"}
-                      rel="noreferrer"
-                      style={{
-                        color: (
-                          track as ClientTidalPlaylist["tracks"][0]
-                        ).quality.includes("HIRES_LOSSLESS")
-                          ? theme.palette.secondary.main
-                          : theme.palette.primary.main,
-                        borderColor: (
-                          track as ClientTidalPlaylist["tracks"][0]
-                        ).quality.includes("HIRES_LOSSLESS")
-                          ? theme.palette.secondary.dark
-                          : theme.palette.primary.dark,
-                      }}
-                    >
-                      Listen
-                    </Link>
-                  </TableCell>
-                )}
-              </TableRow>
-            ))}
-            {playlist.tracks.length > 5 && playlist.type === "spotify" && (
-              <TableRow>
-                <TableCell colSpan={5} align="right">
-                  <Typography variant="caption">
-                    and {playlist.tracks.length - 5} more
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+        {playlist.type === "spotify" ? (
+          <PlaylistSpotify playlist={playlist} />
+        ) : (
+          <PlaylistTidal playlist={playlist as TidalPlaylist} />
+        )}
       </Paper>
-      <Popover
-        open={!!anchorEl}
-        onClose={() => setAnchorEl(null)}
-        anchorEl={anchorEl}
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "right",
-        }}
-        transformOrigin={{
-          vertical: "top",
-          horizontal: "right",
-        }}
-        slotProps={{ paper: { variant: "outlined", elevation: 0 } }}
-        sx={{ mt: 0.5 }}
-      >
-        <List>
-          <MenuItem
-            sx={{ gap: 1 }}
-            onClick={() => {
-              setOpenMethod("desktop");
-              setAnchorEl(null);
-            }}
-          >
-            Desktop App
-            {openMethod === "desktop" && <CheckIcon />}
-          </MenuItem>
-          <MenuItem
-            sx={{ gap: 1 }}
-            onClick={() => {
-              setOpenMethod("web");
-              setAnchorEl(null);
-            }}
-          >
-            Web Player
-            {openMethod === "web" && <CheckIcon />}
-          </MenuItem>
-        </List>
-      </Popover>
     </>
   );
 };

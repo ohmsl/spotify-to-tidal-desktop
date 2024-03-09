@@ -1,10 +1,10 @@
 import axios from "axios";
-import { ClientSpotifyPlaylist } from "../../src/types/ClientSpotifyPlaylist";
+import { SpotifyPlaylist } from "../types/SpotifyPlaylist";
 import { StandardApiResponse } from "./obtainCredentials";
 export const getSpotifyPlaylist = async (
   spotifyToken: string,
   playlistId: string
-): Promise<StandardApiResponse<ClientSpotifyPlaylist>> => {
+): Promise<StandardApiResponse<SpotifyPlaylist>> => {
   if (!spotifyToken) {
     return { data: { error: "Must provide Spotify client token in header" } };
   }
@@ -25,7 +25,7 @@ export const getSpotifyPlaylist = async (
       }
     );
 
-    const data: ClientSpotifyPlaylist = {
+    const data: SpotifyPlaylist = {
       type: "spotify",
       id: response.data.id,
       name: response.data.name,

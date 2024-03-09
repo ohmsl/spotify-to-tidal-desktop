@@ -1,4 +1,11 @@
-export type ClientSpotifyPlaylist = {
+export type SpotifyTrack = {
+  title: string;
+  artist: string;
+  album: string;
+  duration: number;
+};
+
+export type SpotifyPlaylist = {
   type: "spotify" | "tidal";
   id: string;
   name: string;
@@ -13,10 +20,5 @@ export type ClientSpotifyPlaylist = {
     height: number | null;
     url: string;
   }>;
-  tracks: Array<{
-    title: string;
-    artist: string;
-    album: string;
-    duration: number;
-  }>;
+  tracks: Array<SpotifyTrack>;
 };

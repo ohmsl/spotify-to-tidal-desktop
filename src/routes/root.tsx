@@ -19,15 +19,15 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import NavButtons from "../components/NavButtons";
 import Stepper from "../components/Stepper";
-import { ClientSpotifyPlaylist } from "../types/ClientSpotifyPlaylist";
-import { ClientTidalPlaylist } from "../types/ClientTidalPlaylist";
+import { SpotifyPlaylist } from "../types/SpotifyPlaylist";
+import { TidalPlaylist } from "../types/TidalPlaylist";
 dayjs.extend(duration);
 
 export default function Home() {
   const navigate = useNavigate();
 
   const [savedPlaylists, setSavedPlaylists] = useState<
-    Array<ClientTidalPlaylist | ClientSpotifyPlaylist>
+    Array<TidalPlaylist | SpotifyPlaylist>
   >([]); // [ClientTidalPlaylist | ClientSpotifyPlaylist
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [spotifyPlaylistUrl, setSpotifyPlaylistUrl] = useState<string>("");
@@ -45,7 +45,7 @@ export default function Home() {
   };
 
   const handleSavedPlaylistClick = (
-    playlist: ClientTidalPlaylist | ClientSpotifyPlaylist
+    playlist: TidalPlaylist | SpotifyPlaylist
   ) => {
     navigate(`/playlist/convert/${playlist.id}`);
   };

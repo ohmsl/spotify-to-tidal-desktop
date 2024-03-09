@@ -4,6 +4,7 @@ import ReactDOM from "react-dom/client";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import ErrorPage from "./error-page";
 import AuthProvider from "./providers/AuthProvider";
+import { ConversionProvider } from "./providers/ConversionProvider";
 import ThemeProvider from "./providers/ThemeProvider";
 import PlaylistConvert from "./routes/PlaylistConvert";
 import PlaylistView from "./routes/PlaylistView";
@@ -41,7 +42,9 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <AuthProvider>
       <ThemeProvider>
-        <RouterProvider router={router} />
+        <ConversionProvider>
+          <RouterProvider router={router} />
+        </ConversionProvider>
       </ThemeProvider>
     </AuthProvider>
   </React.StrictMode>

@@ -1,14 +1,15 @@
 import { Box, Button, Container } from "@mui/material";
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { getSpotifyPlaylist } from "../api/getSpotifyPlaylist";
 import Loader from "../components/Loader";
 import NavButtons from "../components/NavButtons";
 import Playlist from "../components/Playlist/Playlist";
 import { useAuth } from "../providers/AuthProvider";
-import { ClientSpotifyPlaylist } from "../types/ClientSpotifyPlaylist";
+import { ConversionContext } from "../providers/ConversionProvider";
+import { SpotifyPlaylist } from "../types/SpotifyPlaylist";
 dayjs.extend(duration);
 
 const PlaylistView = () => {
@@ -16,9 +17,11 @@ const PlaylistView = () => {
   const navigate = useNavigate();
   const { tidalClientToken, spotifyClientToken } = useAuth();
 
-  const [spotifyPlaylist, setSpotifyPlaylist] =
-    useState<ClientSpotifyPlaylist>();
+  const [spotifyPlaylist, setSpotifyPlaylist] = useState<SpotifyPlaylist>();
   const [error, setError] = useState<string>();
+
+  const { setSpotifyPlaylist: setCurrentSpotifyPlaylist } =
+    useContext(ConversionContext);
 
   useEffect(() => {
     if (!tidalClientToken || !spotifyClientToken)
@@ -31,6 +34,7 @@ const PlaylistView = () => {
           return;
         }
         setSpotifyPlaylist(response.data);
+        setCurrentSpotifyPlaylist(response.data);
       })
       .catch((error) => {
         setError(error.message);
@@ -44,6 +48,11 @@ const PlaylistView = () => {
   return (
     <>
       <NavButtons />
+      <Loader
+        open={!spotifyPlaylist}
+        message="This may take a moment..."
+        error={error}
+      />
       <Container
         sx={{ display: "flex", flexDirection: "column", gap: 2, my: 3 }}
       >
@@ -57,13 +66,6 @@ const PlaylistView = () => {
               Continue
             </Button>
           </Box>
-        )}
-        {!spotifyPlaylist && (
-          <Loader
-            message="This may take a moment..."
-            progress={0}
-            error={error}
-          />
         )}
       </Container>
     </>
