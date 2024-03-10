@@ -98,6 +98,20 @@ const PlaylistConvert = () => {
         message="This may take a moment..."
         progress={progress}
         error={error}
+        alert={
+          <Alert
+            severity="info"
+            sx={{
+              position: "fixed",
+              top: 12,
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: (theme) => theme.zIndex.drawer + 2,
+            }}
+          >
+            You can background this process, we'll let you know when it's done.
+          </Alert>
+        }
       />
       <Container sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {playlist && <Playlist playlist={playlist} step={3} />}
@@ -114,20 +128,6 @@ const PlaylistConvert = () => {
               Save
             </Button>
           </Box>
-        )}
-
-        {!playlist && (
-          <Alert
-            severity="info"
-            sx={{
-              position: "fixed",
-              top: 12,
-              left: "50%",
-              transform: "translateX(-50%)",
-            }}
-          >
-            You can background this process, we'll let you know when it's done.
-          </Alert>
         )}
       </Container>
     </>

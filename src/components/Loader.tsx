@@ -61,9 +61,10 @@ type Props = {
   progress?: number;
   error?: string;
   message?: string | React.ReactNode;
+  alert: React.ReactNode;
 };
 
-const Loader = ({ open, progress, error, message }: Props) => {
+const Loader = ({ open, progress, error, message, alert }: Props) => {
   const [internalOpen, setInternalOpen] = useState(open);
 
   useEffect(() => {
@@ -81,9 +82,10 @@ const Loader = ({ open, progress, error, message }: Props) => {
       open={internalOpen}
       sx={{
         background: (theme) => theme.palette.primary.gradient,
-        zIndex: 9999,
+        zIndex: (theme) => theme.zIndex.drawer + 1,
       }}
     >
+      {alert}
       <Box
         sx={{
           display: "flex",
