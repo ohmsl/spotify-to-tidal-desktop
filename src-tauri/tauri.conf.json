@@ -45,7 +45,7 @@
     "updater": {
       "active": true,
       "endpoints": [
-        "https://releases.myapp.com/{{target}}/{{arch}}/{{current_version}}"
+        "https://gist.githubusercontent.com/ohmsl/655ac72314fd94ec0c6c98317728c3e1/raw/"
       ],
       "dialog": true,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDU5MkZBOUREMjkyOUM3QzYKUldUR3h5a3AzYWt2V1pldzdGMTFBQWYxeExKYXUvOUtjeEVJL3pOV1diMThaTWZRUjR0VkpaM1UK",

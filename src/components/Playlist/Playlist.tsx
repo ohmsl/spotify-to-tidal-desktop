@@ -1,7 +1,7 @@
 import { Box, Paper, Typography } from "@mui/material";
 import { sendNotification } from "@tauri-apps/api/notification";
 import dayjs from "dayjs";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { SpotifyPlaylist } from "../../types/SpotifyPlaylist";
 import { TidalPlaylist } from "../../types/TidalPlaylist";
 import Stepper from "../Stepper";
@@ -15,7 +15,14 @@ type Props = {
 };
 
 const Playlist = ({ playlist, step }: Props) => {
+  const isFirstRender = useRef(true);
+
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
     if (playlist.type === "tidal") {
       sendNotification({
         title: "Spotify to TIDAL",
