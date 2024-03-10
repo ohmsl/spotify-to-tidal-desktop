@@ -61,7 +61,7 @@ type Props = {
   progress?: number;
   error?: string;
   message?: string | React.ReactNode;
-  alert: React.ReactNode;
+  alert?: React.ReactNode;
 };
 
 const Loader = ({ open, progress, error, message, alert }: Props) => {
