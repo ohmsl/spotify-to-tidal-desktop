@@ -23,7 +23,7 @@ const NavButtons = () => {
         gap: 1,
         p: 2,
         width: "100%",
-        zIndex: 1000,
+        zIndex: (theme) => theme.zIndex.drawer + 1,
         opacity: 0.5,
         transition: "opacity 0.3s",
         "&:hover": { opacity: 1 },

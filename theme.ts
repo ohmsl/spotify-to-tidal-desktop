@@ -38,7 +38,7 @@ const theme = createTheme({
     },
     text: {
       primary: "rgb(255, 255, 255)",
-      secondary: "rgb(245, 245, 245)",
+      secondary: "rgba(255, 255, 255, 0.7)",
     },
   },
   shape: {

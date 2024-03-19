@@ -12,30 +12,36 @@ export type AlertType = {
 };
 
 export type AlertContextType = {
-  addAlert: (alert: AlertType) => void;
+  sendAlert: (alert: AlertType) => void;
 };
 
 export const AlertContext = React.createContext<AlertContextType>({
-  addAlert: () => {},
+  sendAlert: () => {},
 });
 
 export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
-  const [alerts, setAlerts] = useState<Array<AlertType>>([]);
+  const [alerts, setAlerts] = useState<Array<AlertType & { open: boolean }>>(
+    []
+  );
 
   const handleClose = () => {
-    setAlerts((prevAlerts) => prevAlerts.slice(1));
+    setAlerts((prevAlerts) =>
+      prevAlerts.map((alert) => ({ ...alert, open: false }))
+    );
   };
 
-  const addAlert = (alert: AlertType) => {
-    setAlerts((prevAlerts) => [...prevAlerts, alert]);
+  const sendAlert = (alert: AlertType) => {
+    setAlerts((prevAlerts) => [...prevAlerts, { ...alert, open: true }]);
   };
 
   return (
-    <AlertContext.Provider value={{ addAlert }}>
+    <AlertContext.Provider value={{ sendAlert }}>
       {alerts.map((alert, index) => (
         <Snackbar
-          open={alerts.length > 0}
-          autoHideDuration={6000}
+          open={alert.open}
+          autoHideDuration={
+            process.env.NODE_ENV === "development" ? null : 6000
+          }
           onClose={handleClose}
         >
           <Alert
@@ -43,7 +49,9 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
             severity={alert.severity}
             onClose={handleClose}
             {...alert.alertProps}
-          />
+          >
+            {alert.message}
+          </Alert>
         </Snackbar>
       ))}
       {children}

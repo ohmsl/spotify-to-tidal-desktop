@@ -1,6 +1,6 @@
 import axios from "axios";
 import express from "express";
-import { ClientSpotifyPlaylist } from "../../src/types/ClientSpotifyPlaylist";
+import { SpotifyPlaylist } from "../../src/types/SpotifyPlaylist";
 
 export const getSpotifyPlaylist: (
   req: express.Request,
@@ -35,7 +35,7 @@ export const getSpotifyPlaylist: (
       }
     );
 
-    const data: ClientSpotifyPlaylist = {
+    const data: SpotifyPlaylist = {
       type: "spotify",
       id: response.data.id,
       name: response.data.name,

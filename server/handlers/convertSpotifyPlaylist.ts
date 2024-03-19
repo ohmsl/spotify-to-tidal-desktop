@@ -1,7 +1,7 @@
 import axios, { AxiosError } from "axios";
 import express from "express";
 import { Socket } from "socket.io";
-import { ClientTidalPlaylist } from "../../src/types/ClientTidalPlaylist";
+import { TidalPlaylist } from "../../src/types/TidalPlaylist";
 
 export const convertSpotifyPlaylist: (
   req: express.Request,
@@ -120,7 +120,7 @@ export const convertSpotifyPlaylist: (
       }
     }
 
-    const tidalPlaylist: ClientTidalPlaylist = {
+    const tidalPlaylist: TidalPlaylist = {
       type: "tidal",
       id: playlistId,
       name: spotifyResponse.data.name,

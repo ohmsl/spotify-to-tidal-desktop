@@ -118,6 +118,11 @@ export default function Home() {
               <Typography variant="body1">{playlist.name}</Typography>
             </MenuItem>
           ))}
+          {savedPlaylists.length === 0 && (
+            <Typography variant="body1" textAlign="center">
+              No saved playlists
+            </Typography>
+          )}
         </List>
       </Popover>
     </>
