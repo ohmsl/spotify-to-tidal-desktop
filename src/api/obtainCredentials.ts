@@ -4,17 +4,17 @@ export type StandardApiResponse<T> = {
   data: T | { error: string };
 };
 
-export const obtainCredentials = async (): Promise<
+export const obtainCredentials = async (
+  tidalClientId: string,
+  tidalClientSecret: string,
+  spotifyClientId: string,
+  spotifyClientSecret: string
+): Promise<
   StandardApiResponse<{
     tidalResponse: { access_token: string; expires_in: number };
     spotifyResponse: { access_token: string; expires_in: number };
   }>
 > => {
-  const tidalClientId = import.meta.env.VITE_TIDAL_CLIENT_ID;
-  const tidalClientSecret = import.meta.env.VITE_TIDAL_CLIENT_SECRET;
-  const spotifyClientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
-  const spotifyClientSecret = import.meta.env.VITE_SPOTIFY_CLIENT_SECRET;
-
   const tidalCredentials = btoa(`${tidalClientId}:${tidalClientSecret}`);
   const spotifyCredentials = btoa(`${spotifyClientId}:${spotifyClientSecret}`);
 
@@ -30,8 +30,7 @@ export const obtainCredentials = async (): Promise<
       }
     )
     .catch((error) => {
-      console.error("Error fetching TIDAL access token:", error);
-      return { data: { error: "Failed to obtain access token" } };
+      return { data: { error: error.response.data.error_description } };
     });
 
   const spotifyResponse = await axios
@@ -46,8 +45,7 @@ export const obtainCredentials = async (): Promise<
       }
     )
     .catch((error) => {
-      console.error("Error fetching Spotify access token:", error);
-      return { data: { error: "Failed to obtain access token" } };
+      return { data: { error: error.response.data.error } };
     });
 
   return {

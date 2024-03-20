@@ -7,6 +7,8 @@ import React, {
   useState,
 } from "react";
 import { obtainCredentials } from "../api/obtainCredentials";
+import { AlertContext } from "./AlertProvider";
+import { SettingsContext } from "./SettingsProvider";
 
 const endpoint = import.meta.env.VITE_API_ENDPOINT;
 
@@ -22,6 +24,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  const { sendAlert } = useContext(AlertContext);
+  const settings = useContext(SettingsContext);
   const [tidalClientToken, setTidalClientToken] = useState<string | null>(null);
   const [spotifyClientToken, setSpotifyClientToken] = useState<string | null>(
     null
@@ -30,6 +34,7 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const fetchAndSetAuthTokens = useCallback(async () => {
     try {
       // Attempt to fetch the token from local storage
+      console.log("Fetching and setting auth tokens");
       const storedTidalToken = localStorage.getItem("tidalToken");
       const storedSpotifyToken = localStorage.getItem("spotifyToken");
       const tidalTokenDetails = storedTidalToken
@@ -53,11 +58,64 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setSpotifyClientToken(spotifyTokenDetails.token);
       } else {
         // Token is expired or not present; fetch a new one
-        const response = await obtainCredentials();
+        console.log("settings:", settings);
+        const response = await obtainCredentials(
+          settings.tidalClientId,
+          settings.tidalClientSecret,
+          settings.spotifyClientId,
+          settings.spotifyClientSecret
+        );
+        console.log("Response from obtainCredentials:", response);
+
         if ("error" in response.data) {
-          throw new Error("Failed to obtain credentials");
+          console.error(
+            "Error obtaining the auth tokens:",
+            response.data.error
+          );
+          sendAlert({
+            message: `Error obtaining the spotify token ${
+              process.env.NODE_ENV === "development"
+                ? `- ${response.data.error}`
+                : ""
+            }`,
+            severity: "error",
+          });
+          return;
         }
+
         const { tidalResponse, spotifyResponse } = response.data;
+
+        if ("error" in response.data.spotifyResponse) {
+          console.error(
+            "Error obtaining spotify token:",
+            response.data.spotifyResponse.error
+          );
+          sendAlert({
+            message: `Error obtaining spotify token ${
+              process.env.NODE_ENV === "development"
+                ? `- ${response.data.spotifyResponse.error}`
+                : ""
+            }`,
+            severity: "error",
+          });
+          return;
+        }
+
+        if ("error" in response.data.tidalResponse) {
+          console.error(
+            "Error obtaining tidal token:",
+            response.data.tidalResponse.error
+          );
+          sendAlert({
+            message: `Error obtaining TIDAL token ${
+              process.env.NODE_ENV === "development"
+                ? `- ${response.data.tidalResponse.error}`
+                : ""
+            }`,
+            severity: "error",
+          });
+          return;
+        }
 
         const tidalExpires = new Date(
           now.getTime() + tidalResponse.expires_in * 1000
@@ -75,6 +133,11 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           })
         );
         setTidalClientToken(tidalResponse.access_token);
+        settings.setValid({
+          ...settings.valid,
+          tidalClientId: true,
+          tidalClientSecret: true,
+        });
 
         localStorage.setItem(
           "spotifyToken",
@@ -84,9 +147,20 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           })
         );
         setSpotifyClientToken(spotifyResponse.access_token);
+        settings.setValid({
+          ...settings.valid,
+          spotifyClientId: true,
+          spotifyClientSecret: true,
+        });
       }
     } catch (error) {
       console.error("Error obtaining the TIDAL client token:", error);
+      // sendAlert({
+      //   message: `Error obtaining the TIDAL client token ${
+      //     process.env.NODE_ENV === "development" ? `- ${error}` : ""
+      //   }`,
+      //   severity: "error",
+      // });
     }
   }, []);
 

@@ -3,8 +3,10 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import ErrorPage from "./error-page";
+import { AlertProvider } from "./providers/AlertProvider";
 import AuthProvider from "./providers/AuthProvider";
 import { ConversionProvider } from "./providers/ConversionProvider";
+import SettingsProvider from "./providers/SettingsProvider";
 import ThemeProvider from "./providers/ThemeProvider";
 import PlaylistConvert from "./routes/PlaylistConvert";
 import PlaylistView from "./routes/PlaylistView";
@@ -40,12 +42,16 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <AuthProvider>
-      <ThemeProvider>
-        <ConversionProvider>
-          <RouterProvider router={router} />
-        </ConversionProvider>
-      </ThemeProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <SettingsProvider>
+        <AlertProvider>
+          <AuthProvider>
+            <ConversionProvider>
+              <RouterProvider router={router} />
+            </ConversionProvider>
+          </AuthProvider>
+        </AlertProvider>
+      </SettingsProvider>
+    </ThemeProvider>
   </React.StrictMode>
 );

@@ -59,7 +59,12 @@ const PlaylistView = () => {
         {spotifyPlaylist && <Playlist playlist={spotifyPlaylist} step={1} />}
         {spotifyPlaylist && (
           <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
-            <Button variant="text" LinkComponent={Link} href="/">
+            <Button
+              variant="text"
+              LinkComponent={Link}
+              href="/"
+              onClick={() => console.log(window.location)}
+            >
               Back
             </Button>
             <Button variant="contained" onClick={handleClick}>
